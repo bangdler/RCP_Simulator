@@ -18,4 +18,5 @@ export default function Main() {
 const S_Main = styled.main`
   width: 400px;
   height: 400px;
+  margin: 0 auto;
 `;

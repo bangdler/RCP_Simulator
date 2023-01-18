@@ -6,4 +6,12 @@ export const GlobalStyle = createGlobalStyle`
   body {
     overflow: hidden;
   }
+  
+  button {
+    border: none;
+    cursor: pointer;
+    background: none;
+    font-family: 'Gamja Flower';
+    padding: 0;
+  }
 `;

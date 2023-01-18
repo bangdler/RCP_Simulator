@@ -8,7 +8,6 @@ function App() {
   return (
     <>
       <GlobalStyle />
-      <StyledDiv>Canvas 입니다.</StyledDiv>
       <Main />
     </>
   );
