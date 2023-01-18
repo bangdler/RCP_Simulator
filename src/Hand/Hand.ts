@@ -1,7 +1,7 @@
 import { getRandomNumIncludeMax } from '@/utils/utils';
-import { DRAW, WIN_TABLE } from '@/RCP/constants';
+import { DRAW, WIN_TABLE } from '@/Hand/constants';
 
-export interface IRCP {
+export interface I_Hand {
   id: number;
   curX: number;
   curY: number;
@@ -13,9 +13,11 @@ export interface IRCP {
   fightResult: string;
   fight: (compareType: string) => string;
   setFightResult: (result: string) => void;
+  first: boolean;
+  setFirst: (first: boolean) => void;
 }
 
-type RCP_Constructor = {
+type Hand_Constructor = {
   id: number;
   startX: number;
   startY: number;
@@ -25,7 +27,7 @@ type RCP_Constructor = {
   size: number;
 };
 
-export class RCP {
+export class Hand {
   id: number;
   curX: number;
   curY: number;
@@ -36,6 +38,7 @@ export class RCP {
   fightResult: string;
   private curDir: string;
   readonly directions: { [index: string]: Array<number> };
+  first: boolean;
   constructor({
     id,
     startX,
@@ -44,7 +47,7 @@ export class RCP {
     limitX,
     limitY,
     size,
-  }: RCP_Constructor) {
+  }: Hand_Constructor) {
     this.id = id;
     this.size = size;
     this.curX = startX;
@@ -64,6 +67,7 @@ export class RCP {
       downLeft: [-1, -1],
     };
     this.curDir = Object.keys(this.directions)[getRandomNumIncludeMax(0, 6)];
+    this.first = true;
   }
 
   animate(ctx: CanvasRenderingContext2D) {
@@ -106,5 +110,9 @@ export class RCP {
 
   setFightResult(result: string) {
     this.fightResult = result;
+  }
+
+  setFirst(first: boolean) {
+    this.first = first;
   }
 }
