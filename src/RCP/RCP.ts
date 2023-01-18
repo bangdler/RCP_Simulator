@@ -1,12 +1,18 @@
 import { getRandomNumIncludeMax } from '@/utils/utils';
+import { DRAW, WIN_TABLE } from '@/RCP/constants';
 
 export interface IRCP {
+  id: number;
   curX: number;
   curY: number;
   type: string;
   animate: (ctx: CanvasRenderingContext2D) => void;
   randomMove: () => void;
   updateLimit: (x: number, y: number) => void;
+  setType: (type: string) => void;
+  fightResult: string;
+  fight: (compareType: string) => string;
+  setFightResult: (result: string) => void;
 }
 
 type RCP_Constructor = {
@@ -27,6 +33,7 @@ export class RCP {
   limitX: number;
   limitY: number;
   size: number;
+  fightResult: string;
   private curDir: string;
   readonly directions: { [index: string]: Array<number> };
   constructor({
@@ -43,6 +50,9 @@ export class RCP {
     this.curX = startX;
     this.curY = startY;
     this.type = type;
+    this.limitX = limitX;
+    this.limitY = limitY;
+    this.fightResult = DRAW;
     this.directions = {
       up: [0, 1],
       down: [0, -1],
@@ -54,12 +64,6 @@ export class RCP {
       downLeft: [-1, -1],
     };
     this.curDir = Object.keys(this.directions)[getRandomNumIncludeMax(0, 6)];
-    this.limitX = limitX;
-    this.limitY = limitY;
-  }
-
-  getId() {
-    return this.id;
   }
 
   animate(ctx: CanvasRenderingContext2D) {
@@ -90,5 +94,17 @@ export class RCP {
   updateLimit(limitX: number, limitY: number) {
     this.limitX = limitX;
     this.limitY = limitY;
+  }
+
+  setType(type: string) {
+    this.type = type;
+  }
+
+  fight(compareType: string): string {
+    return WIN_TABLE[this.type][compareType];
+  }
+
+  setFightResult(result: string) {
+    this.fightResult = result;
   }
 }

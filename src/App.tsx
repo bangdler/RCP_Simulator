@@ -1,16 +1,21 @@
-import React from "react";
-import styled from "styled-components";
-import "./app.css"
+import React from 'react';
+import styled from 'styled-components';
+
+import { GlobalStyle } from '@/style/GlobalStyle';
+import Main from '@/pages/Main';
 
 function App() {
-    return (<>
-        <div className="app">React App</div>
-        <StyledDiv>styled div</StyledDiv>
-    </>)
+  return (
+    <>
+      <GlobalStyle />
+      <StyledDiv>Canvas 입니다.</StyledDiv>
+      <Main />
+    </>
+  );
 }
 
 const StyledDiv = styled.div`
   color: blue;
-`
+`;
 
 export default App;
