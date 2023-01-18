@@ -16,6 +16,6 @@ export default function Main() {
 }
 
 const S_Main = styled.main`
-  width: 100vw;
-  height: 100vh;
+  width: 400px;
+  height: 400px;
 `;
