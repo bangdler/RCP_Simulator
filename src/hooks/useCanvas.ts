@@ -1,15 +1,10 @@
-import {
-  MutableRefObject,
-  RefObject,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { MutableRefObject, RefObject, useEffect, useRef } from 'react';
 
 type useCanvas = {
   canvasRef: RefObject<HTMLCanvasElement>;
   startAnimation: () => void;
   stopAnimation: () => void;
+  setAnimation: () => void;
 };
 export const useCanvas = (
   canvasWidth: number,
@@ -37,18 +32,23 @@ export const useCanvas = (
 
     setCanvas();
 
-    const requestAnimation = () => {
-      requestId.current = window.requestAnimationFrame(requestAnimation);
-      if (ctx) {
-        animate(ctx);
-      }
-    };
-    requestAnimation();
+    if (ctx) {
+      animate(ctx);
+    }
+
     return () => {
       window.cancelAnimationFrame(requestId.current);
       requestId.current = 0;
     };
   }, [canvasWidth, canvasHeight]);
+
+  const setAnimation = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (ctx) {
+      animate(ctx);
+    }
+  };
 
   const startAnimation = () => {
     if (requestId.current) return;
@@ -68,5 +68,5 @@ export const useCanvas = (
     window.cancelAnimationFrame(requestId.current);
     requestId.current = 0;
   };
-  return { canvasRef, startAnimation, stopAnimation };
+  return { canvasRef, startAnimation, stopAnimation, setAnimation };
 };
