@@ -1,11 +1,23 @@
-import { RefObject, useEffect, useRef } from 'react';
+import {
+  MutableRefObject,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
+type useCanvas = {
+  canvasRef: RefObject<HTMLCanvasElement>;
+  startAnimation: () => void;
+  stopAnimation: () => void;
+};
 export const useCanvas = (
   canvasWidth: number,
   canvasHeight: number,
   animate: (ctx: CanvasRenderingContext2D) => void
-) => {
+): useCanvas => {
   const canvasRef: RefObject<HTMLCanvasElement> = useRef(null);
+  const requestId: MutableRefObject<number> = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,10 +37,36 @@ export const useCanvas = (
 
     setCanvas();
 
-    if (ctx) {
-      animate(ctx);
-    }
+    const requestAnimation = () => {
+      requestId.current = window.requestAnimationFrame(requestAnimation);
+      if (ctx) {
+        animate(ctx);
+      }
+    };
+    requestAnimation();
+    return () => {
+      window.cancelAnimationFrame(requestId.current);
+      requestId.current = 0;
+    };
   }, [canvasWidth, canvasHeight]);
 
-  return canvasRef;
+  const startAnimation = () => {
+    if (requestId.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    const requestAnimation = () => {
+      requestId.current = window.requestAnimationFrame(requestAnimation);
+      if (ctx) {
+        animate(ctx);
+      }
+    };
+    requestAnimation();
+  };
+
+  const stopAnimation = () => {
+    if (!requestId) return;
+    window.cancelAnimationFrame(requestId.current);
+    requestId.current = 0;
+  };
+  return { canvasRef, startAnimation, stopAnimation };
 };
