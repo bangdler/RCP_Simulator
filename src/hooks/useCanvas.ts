@@ -1,4 +1,9 @@
-import { MutableRefObject, RefObject, useEffect, useRef } from 'react';
+import {
+  MutableRefObject,
+  RefObject,
+  useEffect,
+  useRef,
+} from 'react';
 
 type useCanvas = {
   canvasRef: RefObject<HTMLCanvasElement>;
@@ -64,9 +69,10 @@ export const useCanvas = (
   };
 
   const stopAnimation = () => {
-    if (!requestId) return;
+    if (!requestId.current) return;
     window.cancelAnimationFrame(requestId.current);
     requestId.current = 0;
   };
+
   return { canvasRef, startAnimation, stopAnimation, setAnimation };
 };

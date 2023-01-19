@@ -1,17 +1,13 @@
-import React, { useEffect } from 'react';
+import React, {
+  MouseEventHandler,
+  useMemo,
+  useEffect,
+  useState,
+} from 'react';
 import styled from 'styled-components';
 
 import { useCanvas } from '@/hooks/useCanvas';
-import { I_Hand, Hand } from '@/Hand/Hand';
-import {
-  HAND_SIZE,
-  HAND_TYPES,
-  LOSE,
-  WIN,
-  DRAW,
-  INIT_NUM,
-} from '@/Hand/constants';
-import { getRandomNumExcludeMax } from '@/utils/utils';
+import { HAND_SIZE, HAND_TYPES, INIT_NUM } from '@/Hand/constants';
 import { HandTable, I_HandTable } from '@/Hand/HandTable';
 
 type CanvasProps = {
@@ -20,13 +16,21 @@ type CanvasProps = {
 };
 
 export default function Canvas({ canvasWidth, canvasHeight }: CanvasProps) {
-  const handTable: I_HandTable = new HandTable({
-    initNum: INIT_NUM,
-    handTypes: HAND_TYPES,
-    width: canvasWidth,
-    height: canvasHeight,
-    size: HAND_SIZE,
-  });
+  const [lastHand, setLastHand] = useState<string>('');
+  const [chooseHand, setChooseHand] = useState<string>('');
+  const [aniVelocity, setAniVelocity] = useState<number>(1);
+
+  const handTable: I_HandTable = useMemo(
+    () =>
+      new HandTable({
+        initNum: INIT_NUM,
+        handTypes: HAND_TYPES,
+        width: canvasWidth,
+        height: canvasHeight,
+        size: HAND_SIZE,
+      }),
+    [canvasWidth, canvasHeight, INIT_NUM, HAND_TYPES, HAND_SIZE]
+  );
 
   const fillBackground = (ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = 'aquamarine';
@@ -38,11 +42,18 @@ export default function Canvas({ canvasWidth, canvasHeight }: CanvasProps) {
     fillBackground(ctx);
     if (Object.values(handTable.numOfHands).filter(x => x === 0).length === 2) {
       stopAnimation();
+      for (let key in handTable.numOfHands) {
+        if (handTable.numOfHands[key] !== 0) setLastHand(key);
+      }
     }
+    setAniVelocity(handTable.velocity);
     handTable.animateHands(ctx);
   };
 
   const reset = () => {
+    setChooseHand('');
+    setLastHand('');
+    setAniVelocity(1);
     stopAnimation();
     handTable.resetTable();
     setAnimation();
@@ -54,6 +65,13 @@ export default function Canvas({ canvasWidth, canvasHeight }: CanvasProps) {
     animate
   );
 
+  const onClickChooseBtn: MouseEventHandler<HTMLDivElement> = ({ target }) => {
+    if (!(target instanceof HTMLButtonElement)) return;
+    if (typeof target.dataset.hand !== 'string') return;
+    if (lastHand !== '') return;
+    setChooseHand(target.dataset.hand);
+  };
+
   useEffect(() => {
     for (let idx in handTable.handTable) {
       const hand = handTable.handTable[idx];
@@ -64,6 +82,13 @@ export default function Canvas({ canvasWidth, canvasHeight }: CanvasProps) {
   return (
     <S_Wrapper>
       <S_Title>가위바위보의 승자는 누구?</S_Title>
+      <S_ChooseContainer onClick={onClickChooseBtn}>
+        {HAND_TYPES.map((hand, idx) => (
+          <S_ChooseBtn key={idx} data-hand={hand} choose={hand === chooseHand}>
+            {hand}
+          </S_ChooseBtn>
+        ))}
+      </S_ChooseContainer>
       <S_Container>
         <canvas ref={canvasRef} />
         <S_BtnContainer>
@@ -72,6 +97,15 @@ export default function Canvas({ canvasWidth, canvasHeight }: CanvasProps) {
           <S_Btn onClick={reset}>reset</S_Btn>
         </S_BtnContainer>
       </S_Container>
+      <S_Span>{aniVelocity} 배속입니다.</S_Span>
+      {lastHand === '' ? (
+        ''
+      ) : (
+        <S_Span>
+          {chooseHand === lastHand ? '정답!' : '땡!'} 최종 승자는 {lastHand}{' '}
+          입니다.
+        </S_Span>
+      )}
     </S_Wrapper>
   );
 }
@@ -89,23 +123,50 @@ const S_Title = styled.h1`
   align-items: center;
 `;
 
+const S_ChooseContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  * {
+    margin: 10px;
+  }
+`;
+
+const S_ChooseBtn = React.memo(styled.button<{ choose: boolean }>`
+  background: aquamarine;
+  font-size: 20px;
+  border-radius: 4px;
+  padding: 5px;
+  border: ${({ choose }) =>
+    choose ? `1px solid red` : `1px solid aquamarine`};
+`);
+
 const S_Container = styled.div`
   display: flex;
   * {
-    margin-right: 10px;
+    margin: 10px;
   }
 `;
 
 const S_BtnContainer = styled.div`
   display: flex;
   flex-flow: column;
-  *{
+  * {
     margin: 10px;
   }
 `;
-const S_Btn = styled.button`
+
+const S_Btn = React.memo(styled.button`
   background: aquamarine;
   font-size: 20px;
   border-radius: 4px;
   padding: 5px;
+`);
+
+const S_Span = styled.span`
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 4px;
 `;
