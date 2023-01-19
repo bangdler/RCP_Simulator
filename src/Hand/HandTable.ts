@@ -7,6 +7,7 @@ export interface I_HandTable {
   numOfHands: { [index: string]: number };
   animateHands: (ctx: CanvasRenderingContext2D) => void;
   resetTable: () => void;
+  velocity: number;
 }
 type HandTable_Constructor = {
   initNum: number;
@@ -23,6 +24,8 @@ export class HandTable implements I_HandTable {
   readonly width: number;
   readonly height: number;
   readonly size: number;
+  private total: number;
+  velocity: number;
   constructor({
     initNum,
     handTypes,
@@ -36,10 +39,12 @@ export class HandTable implements I_HandTable {
     this.height = height;
     this.size = size;
     this.numOfHands = {
-      [this.handTypes[0]]: this.initNum,
-      [this.handTypes[1]]: this.initNum,
-      [this.handTypes[2]]: this.initNum,
+      [handTypes[0]]: initNum,
+      [handTypes[1]]: initNum,
+      [handTypes[2]]: initNum,
     };
+    this.velocity = 1;
+    this.total = initNum * handTypes.length;
     this.handTable = this.makeHandTable();
   }
 
@@ -51,9 +56,10 @@ export class HandTable implements I_HandTable {
         startX: getRandomNumExcludeMax(this.size, this.width - this.size),
         startY: getRandomNumExcludeMax(this.size, this.height - this.size),
         type: this.handTypes[i % this.handTypes.length],
-        limitX: this.width,
+        limitX: this.width - this.size,
         limitY: this.height - this.size,
         size: this.size,
+        velocity: this.velocity,
       });
     }
     return obj;
@@ -92,6 +98,7 @@ export class HandTable implements I_HandTable {
 
   setFightResultIfOverlap(ctx: CanvasRenderingContext2D) {
     const overlapTable = this.getOverlapTable();
+
     for (let idx in overlapTable) {
       const overlappedHand = this.handTable[idx];
       const fightResults = overlapTable[idx];
@@ -103,6 +110,7 @@ export class HandTable implements I_HandTable {
       } else {
         overlappedHand.setFightResult(DRAW);
       }
+
       if (!overlappedHand.first) {
         this.setFightingEffect(ctx, overlappedHand.curX, overlappedHand.curY);
       } else {
@@ -114,14 +122,31 @@ export class HandTable implements I_HandTable {
   animateHands(ctx: CanvasRenderingContext2D) {
     for (let idx in this.handTable) {
       const hand = this.handTable[idx];
+      hand.animate(ctx);
+
       if (hand.fightResult === LOSE) {
         this.numOfHands[hand.type] -= 1;
         delete this.handTable[idx];
+        this.total -= 1;
         continue;
       }
-      hand.animate(ctx);
+
+      if (this.total < 5) {
+        this.velocity = 4;
+      } else if (
+        this.total === Math.floor((this.initNum * this.handTypes.length) / 3)
+      ) {
+        this.velocity = 3;
+      } else if (
+        this.total === Math.floor((this.initNum * this.handTypes.length) / 1.5)
+      ) {
+        this.velocity = 2;
+      }
+
+      hand.setVelocity(this.velocity);
       hand.randomMove();
     }
+
     this.setFightResultIfOverlap(ctx);
   }
 

@@ -15,6 +15,7 @@ export interface I_Hand {
   setFightResult: (result: string) => void;
   first: boolean;
   setFirst: (first: boolean) => void;
+  setVelocity: (velocity: number) => void;
 }
 
 type Hand_Constructor = {
@@ -25,6 +26,7 @@ type Hand_Constructor = {
   limitX: number;
   limitY: number;
   size: number;
+  velocity: number;
 };
 
 export class Hand {
@@ -39,6 +41,7 @@ export class Hand {
   private curDir: string;
   readonly directions: { [index: string]: Array<number> };
   first: boolean;
+  velocity: number;
   constructor({
     id,
     startX,
@@ -47,6 +50,7 @@ export class Hand {
     limitX,
     limitY,
     size,
+    velocity,
   }: Hand_Constructor) {
     this.id = id;
     this.size = size;
@@ -68,6 +72,7 @@ export class Hand {
     };
     this.curDir = Object.keys(this.directions)[getRandomNumIncludeMax(0, 6)];
     this.first = true;
+    this.velocity = velocity;
   }
 
   animate(ctx: CanvasRenderingContext2D) {
@@ -78,8 +83,8 @@ export class Hand {
   }
 
   randomMove() {
-    const newX = this.curX + this.directions[this.curDir][0];
-    const newY = this.curY + this.directions[this.curDir][1];
+    const newX = this.curX + this.directions[this.curDir][0] * this.velocity;
+    const newY = this.curY + this.directions[this.curDir][1] * this.velocity;
     if (
       newX < this.size ||
       newY < this.size ||
@@ -91,8 +96,8 @@ export class Hand {
       this.curDir = newDir;
       return;
     }
-    this.curX += this.directions[this.curDir][0];
-    this.curY += this.directions[this.curDir][1];
+    this.curX += this.directions[this.curDir][0] * this.velocity;
+    this.curY += this.directions[this.curDir][1] * this.velocity;
   }
 
   updateLimit(limitX: number, limitY: number) {
@@ -105,6 +110,9 @@ export class Hand {
   }
 
   fight(compareType: string): string {
+    const randomIdx = getRandomNumIncludeMax(0, 6);
+    const newDir = Object.keys(this.directions)[randomIdx];
+    this.curDir = newDir;
     return WIN_TABLE[this.type][compareType];
   }
 
@@ -114,5 +122,9 @@ export class Hand {
 
   setFirst(first: boolean) {
     this.first = first;
+  }
+
+  setVelocity(velocity: number) {
+    this.velocity = velocity;
   }
 }
