@@ -156,6 +156,7 @@ export class HandTable implements I_HandTable {
       [this.handTypes[1]]: this.initNum,
       [this.handTypes[2]]: this.initNum,
     };
+    this.velocity = 1;
     this.handTable = this.makeHandTable();
   }
 }
